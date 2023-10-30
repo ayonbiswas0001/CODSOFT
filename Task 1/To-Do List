@@ -1,0 +1,81 @@
+import tkinter as tk
+from tkinter import messagebox
+
+# Create the main application window
+root = tk.Tk()
+root.title("To-Do List")
+
+# Set the size of the GUI window (width x height)
+root.geometry("400x400")
+
+# Create a list to store tasks with priority
+tasks = []
+
+# Function to add a task with priority
+def add_task():
+    task = entry.get()
+    priority = priority_var.get()
+    if task:
+        tasks.append({"task": task, "priority": priority, "delete_switch": tk.BooleanVar()})
+        update_task_list()
+        entry.delete(0, "end")
+    else:
+        messagebox.showwarning("Warning", "Please enter a task.")
+
+# Function to delete selected tasks
+def delete_tasks():
+    global tasks
+    updated_tasks = []
+    for task_data in tasks:
+        if not task_data["delete_switch"].get():
+            updated_tasks.append(task_data)
+    tasks = updated_tasks
+    update_task_list()
+
+# Function to update the task list
+def update_task_list():
+    for widget in task_frame.winfo_children():
+        widget.destroy()
+    
+    # Sort tasks by priority, high to low
+    sorted_tasks = sorted(tasks, key=lambda x: {"High": 0, "Medium": 1, "Low": 2}[x["priority"]])
+    
+    for i, task_data in enumerate(sorted_tasks, start=1):
+        task = task_data["task"]
+        priority = task_data["priority"]
+        delete_switch = tk.Checkbutton(task_frame, variable=task_data["delete_switch"])
+        task_label = tk.Label(task_frame, text=f"{i}. {task}")
+        
+        # Color code tasks based on priority
+        if priority == "High":
+            task_label.config(fg="red")
+        elif priority == "Medium":
+            task_label.config(fg="orange")
+        else:  # Low priority
+            task_label.config(fg="green")
+        
+        delete_switch.grid(row=i, column=0, padx=5)
+        task_label.grid(row=i, column=1, padx=5, sticky="w")
+
+# Create input field and buttons
+entry = tk.Entry(root, width=30)
+add_button = tk.Button(root, text="Add Task", command=add_task)
+delete_button = tk.Button(root, text="Delete Selected Tasks", command=delete_tasks)
+task_frame = tk.Frame(root)
+
+# Priority dropdown menu
+priority_var = tk.StringVar(root)
+priority_var.set("Medium")  # Default priority
+priority_label = tk.Label(root, text="Priority:")
+priority_menu = tk.OptionMenu(root, priority_var, "High", "Medium", "Low")
+
+# Place widgets in the window
+entry.pack(pady=10)
+priority_label.pack()
+priority_menu.pack()
+add_button.pack()
+delete_button.pack()
+task_frame.pack()
+
+# Start the GUI main loop
+root.mainloop()
